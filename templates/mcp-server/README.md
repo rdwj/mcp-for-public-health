@@ -15,6 +15,7 @@ The key design principle: every tool response should include structured metadata
 Every tool response should include these fields:
 
 - **results**: The actual data (measurements, statistics, records)
+- **data_kind**: What sort of data this is -- `survey` (sampled estimates with confidence intervals), `administrative` (records of transactions or awards, e.g. a grants database), `registry` (enumerated cases), or `sensor` (instrument readings). The agent uses this to judge confidence: survey data is only fully trustworthy with its methodology; administrative and registry records are authoritative on their own terms but answer different questions (a grant's existence says nothing about its findings)
 - **methodology**: How the data was collected -- sampling design, measurement instruments, known biases, population coverage
 - **geographic_context**: What geographic resolution is available, why (sampling design, sensor placement), and what alternatives exist at other levels
 - **cross_dataset_context**: What other data sources cover this topic, how they differ, and when each is more appropriate

@@ -13,8 +13,8 @@ A framework for building evaluated, methodology-aware public health data agents 
 ## Prerequisites
 
 - [fips-agents CLI](https://github.com/fips-agents/agent-template) for scaffolding agents
-- An OpenShift cluster with OpenShift AI (or any Kubernetes cluster with KFP)
-- A vLLM-served model (or any OpenAI-compatible endpoint)
+- An OpenShift cluster with OpenShift AI (or any Kubernetes cluster with KFP) -- or [OpenShift Local](docs/deploying-on-openshift-local.md) on a laptop
+- A vLLM-served model, any OpenAI-compatible endpoint, or a hosted API via LiteLLM (see `templates/agent/agent.yaml`)
 - Python 3.11+
 
 ## Quick Start
@@ -32,6 +32,9 @@ A framework for building evaluated, methodology-aware public health data agents 
 - [Reasoning Protocol](docs/reasoning-protocol.md) -- How to apply the 6-step protocol to your domain
 - [Evaluation Methodology](docs/evaluation-methodology.md) -- The 7-dimension capability judge explained
 - [Architecture](docs/architecture.md) -- Component diagram and deployment overview
+- [Multi-Source Agents](docs/multi-source-agents.md) -- Wiring several MCP servers into one agent: tool families, routing rules, `data_kind`
+- [Deploying on OpenShift Local](docs/deploying-on-openshift-local.md) -- Run the whole stack on a laptop with a hosted model; `scripts/deploy-local-cluster.sh`
+- [Known Template Issues](docs/known-template-issues.md) -- Drift between the fips-agents templates and the framework, and the fixes
 
 ## License
 

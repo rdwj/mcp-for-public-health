@@ -9,22 +9,60 @@ agent:
     Methodology-aware data agent with structured reasoning protocol.
     Replace with your domain description.
 
+# -- Model ---------------------------------------------------------------------
+#
+# `provider` selects the backend (fipsagents >= 0.32):
+#   openai   -- direct OpenAI-compatible client: vLLM, llm-d, LlamaStack, OpenAI.
+#               Set MODEL_ENDPOINT (ending in /v1) and OPENAI_API_KEY
+#               ("not-required" for an unauthenticated vLLM).
+#   litellm  -- any provider LiteLLM supports, chosen by the model-name prefix:
+#               anthropic/claude-...   bedrock/anthropic.claude-...   azure/...
+#               Credentials come from the provider's usual env var
+#               (ANTHROPIC_API_KEY, AWS_*, AZURE_*); leave MODEL_ENDPOINT empty.
+#   anthropic -- the native backend; in fipsagents 0.32 it is rewritten to the
+#               legacy adapter sidecar at localhost:8081 and does not work
+#               stand-alone. Use litellm with the anthropic/ prefix instead.
+#
+# Temperature: reasoning models may accept only one value (Claude Fable
+# requires 1.0); LiteLLM rejects anything else before sending. The value in
+# the prompt file's front matter is informational only -- this is the one
+# the model receives.
+#
+# Examples:
+#   vLLM on-cluster:  MODEL_PROVIDER=openai MODEL_ENDPOINT=http://vllm.ns.svc:8000/v1
+#                     MODEL_NAME=gpt-oss-20b OPENAI_API_KEY=not-required   (the default)
+#   Hosted API:       MODEL_PROVIDER=litellm MODEL_NAME=anthropic/claude-sonnet-4-5
+#                     ANTHROPIC_API_KEY=... (from a Secret, never the ConfigMap)
+#
+# The default model is the open-weight gpt-oss-20b, served by vLLM. The name
+# must match what the endpoint reports in /v1/models (some deployments report
+# "RedHatAI/gpt-oss-20b"). gpt-oss is a reasoning model: it returns the
+# answer in `content` and its chain-of-thought in `reasoning_content`, so
+# give max_tokens headroom or `content` can come back null when truncated.
 model:
-  name: ${MODEL_NAME:-openai/your-model-id}
+  provider: ${MODEL_PROVIDER:-openai}
+  name: ${MODEL_NAME:-gpt-oss-20b}
   endpoint: ${MODEL_ENDPOINT:-http://localhost:8000/v1}
-  temperature: 0.3
-  max_tokens: 4096
+  temperature: ${MODEL_TEMPERATURE:-0.3}
+  max_tokens: ${MODEL_MAX_TOKENS:-4096}
 
 server:
   host: ${HOST:-0.0.0.0}
   port: ${PORT:-8080}
 
 # MCP servers the agent connects to at startup.
-# The framework discovers tools via the MCP protocol.
+# The framework discovers tools via the MCP protocol. List one entry per
+# server; tools from every server share one registry, so names must be
+# unique across servers. On OpenShift, use the service's fully qualified
+# DNS when the server lives in another namespace:
+#   http://mcp-server.<namespace>.svc.cluster.local:8080/mcp/
+# See docs/multi-source-agents.md for prompting an agent that spans sources.
 mcp_servers:
   - name: ${MCP_SERVER_NAME:-domain-data-server}
     url: ${MCP_SERVER_URL:-http://localhost:9090/mcp/}
     # transport: streamable-http  # auto-detected by FastMCP v3
+  # - name: ${MCP_SERVER2_NAME:-second-source}
+  #   url: ${MCP_SERVER2_URL:-http://mcp-server.second-source.svc.cluster.local:8080/mcp/}
 
 # Platform mode (OGX). When enabled, the framework delegates tool
 # orchestration to OGX and the mcp_servers block above is ignored.

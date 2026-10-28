@@ -54,6 +54,8 @@ async def query_air_quality(
         ],
 
         # -- Methodology: how this data was collected --
+        # survey | administrative | registry | sensor -- see README.
+        "data_kind": "sensor",
         "methodology": (
             "PM2.5 measured via Federal Reference Method (FRM) gravimetric "
             "analysis at EPA AQS monitoring stations. Hourly values are "

@@ -149,6 +149,10 @@ def _build_confidence_card(
     if used_tools and tool_results:
         has_data = False
         has_methodology = False
+        # Data kinds declared by the tools (see templates/mcp-server/README.md).
+        # Survey estimates need methodology to be fully trusted; administrative
+        # and registry records are authoritative as records of what happened.
+        data_kinds: set[str] = set()
 
         for result_text in tool_results:
             try:
@@ -156,8 +160,19 @@ def _build_confidence_card(
             except (ValueError, TypeError):
                 continue
 
-            results_list = result.get("results") or result.get("availability")
+            kind = str(result.get("data_kind") or "").strip().lower()
+            if kind:
+                data_kinds.add(kind)
+
+            results_list = (
+                result.get("results")
+                or result.get("availability")
+                or result.get("records")
+            )
             if results_list:
+                has_data = True
+            elif kind in ("administrative", "registry") and not result.get("error"):
+                # A single-record response (one award, one case) has no list.
                 has_data = True
 
             if result.get("methodology") or result.get("methodology_structured"):
@@ -184,6 +199,13 @@ def _build_confidence_card(
             basis = (
                 "Retrieved data with methodology context. Scope and "
                 "geographic resolution verified via tool response metadata."
+            )
+        elif has_data and data_kinds and data_kinds <= {"administrative", "registry"}:
+            level = "HIGH"
+            basis = (
+                "Retrieved administrative/registry records (authoritative "
+                "as a record of what was funded, filed or reported -- not "
+                "survey estimates and not evidence of outcomes)."
             )
         elif has_data:
             level = "MODERATE"
@@ -293,7 +315,7 @@ class DomainDataAgent(BaseAgent):
     #    MCP server's actual tool names.
     _TOOL_INSIST_MSG = (
         "Your answer did not include any tool calls. The system prompt "
-        "requires you to call at least one tool (query_data, "
+        "requires you to call at least one tool (for example query_data, "
         "describe_datasets, or get_methodology) to retrieve "
         "real data before answering. Please call the appropriate tool "
         "now -- do not answer from memory."

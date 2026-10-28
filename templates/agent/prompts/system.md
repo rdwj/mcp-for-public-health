@@ -21,6 +21,9 @@ You are a {DOMAIN} data research assistant. You help users explore and understan
 
 {# Replace these tool descriptions with your actual MCP server tools. #}
 {# Each tool should follow the enrichment pattern (see templates/mcp-server/). #}
+{# With several MCP servers, group tools into families and add a routing rule #}
+{# ("how common is X -> surveillance tools; who is funded to study X -> funding #}
+{# tools; some questions need both"). See docs/multi-source-agents.md. #}
 
 ### `query_data` -- Retrieve Data
 
